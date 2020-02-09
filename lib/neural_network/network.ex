@@ -58,7 +58,7 @@ defmodule NeuralNetwork.Network do
   ‘relu’, the rectified linear unit function, returns f(x) = max(0, x)
   """
   def update_activation(pid, activation) do
-    fields = Map.merge(pid |> Network.get, %{activation: activation})
+    fields = Map.merge(pid |> Network.model, %{activation: activation})
     Agent.update(pid, &Map.merge(&1, fields))
   end
 

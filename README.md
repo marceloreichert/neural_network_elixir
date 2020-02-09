@@ -61,7 +61,7 @@ Run tests
 
 
 ### Run Console
-    alias NeuralNetwork.{DataFactory, Network}
+    alias NeuralNetwork.{DataFactory, Network, LossFunction, Layer}
     {:ok, network_pid} = Network.start_link([2, 1], %{activation: :relu})
     data = DataFactory.gate_for("or")
     Network.fit(network_pid, data, %{epochs: 10_000, log_freqs: 1000})
