@@ -39,7 +39,7 @@ defmodule NeuralNetwork.Network do
   @doc """
   Return the network by pid.
   """
-  def get(pid), do: Agent.get(pid, & &1)
+  def model(pid), do: Agent.get(pid, & &1)
 
   @doc """
   Update the network layers.
@@ -89,7 +89,7 @@ defmodule NeuralNetwork.Network do
   end
 
   defp connect_layers(pid) do
-    layers = pid |> Network.get() |> flatten_layers
+    layers = pid |> Network.model() |> flatten_layers
 
     layers
     |> Stream.with_index()
@@ -121,12 +121,72 @@ defmodule NeuralNetwork.Network do
   end
 
   @doc """
+  Generates output predictions for the input samples.
+  """
+  def predict(network_pid, input_data) do
+    network_pid |> forward(input_data)
+    network_pid |> get_output_data()
+  end
+
+  defp get_output_data(network_pid) do
+    with model <- network_pid |> Network.model() do
+      model.output_layer
+      |> Layer.get()
+      |> Layer.neurons_output()
+    end
+  end
+
+  @doc """
+  Forward
+  """
+  defp forward(network_pid, input_data) do
+    network_pid |> Network.model() |> Network.activate(input_data)
+  end
+
+  @doc """
+  Backpropagation
+  """
+  def backward(network_pid, output_data) do
+    network_pid
+    |> Network.model()
+    |> Network.learn(output_data)
+  end
+
+  @doc """
+  Trains the model for a fixed number of epochs.
+  """
+  def fit(network_pid, data, options \\ %{}) do
+    epochs = options.epochs
+    log_freqs = options.log_freqs
+    data_length = length(data)
+
+    for epoch <- 0..epochs do
+      average_error =
+        Enum.reduce(data, 0, fn sample, sum ->
+          network_pid |> forward(sample.input)
+          network_pid |> backward(sample.output)
+
+          sum + Network.model(network_pid).error / data_length
+        end)
+
+      if rem(epoch, log_freqs) == 0 || epoch + 1 == epochs do
+        IO.puts("Epoch: #{epoch}   Error: #{unexponential(average_error)}")
+      end
+    end
+    network_pid
+  end
+
+  defp unexponential(average_error) do
+    :erlang.float_to_binary(average_error, [{:decimals, 19}, :compact])
+  end
+
+  @doc """
   Set the network error and output layer's deltas propagate them
-  backward through the network. (Back Propogation!)
+  backward through the network. (Back Propagation!)
 
   The input layer is skipped (no use for deltas).
   """
-  def train(network, target_outputs) do
+  def learn(network, target_outputs) do
     network.output_layer |> Layer.get() |> Layer.train(target_outputs)
     network.pid |> update(%{error: error_function(network, target_outputs)})
 
