@@ -3,7 +3,7 @@ defmodule NeuralNetwork.Network do
   Contains layers which makes up a matrix of neurons.
   """
 
-  alias NeuralNetwork.{Layer, Network, Neuron}
+  alias NeuralNetwork.{Layer, Network, Neuron, LossFunction}
 
   defstruct pid: nil,
             input_layer: nil,
@@ -206,13 +206,13 @@ defmodule NeuralNetwork.Network do
      |> Enum.reduce(0, fn {neuron, index}, sum ->
        target_output = Enum.at(target_outputs, index)
        actual_output = Neuron.get(neuron).output
-       squared_error(sum, target_output, actual_output)
+       LossFunction.squared_error(sum, target_output, actual_output)
      end)) / length(Layer.get(network.output_layer).neurons)
   end
 
-  defp squared_error(sum, target_output, actual_output) do
-    sum + 0.5 * :math.pow(target_output - actual_output, 2)
-  end
+  # defp squared_error(sum, target_output, actual_output) do
+  #   sum + 0.5 * :math.pow(target_output - actual_output, 2)
+  # end
 
   defp map_layers(input_layer, hidden_layers, output_layer) do
     %{
