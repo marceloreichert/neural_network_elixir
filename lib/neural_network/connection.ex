@@ -10,11 +10,11 @@ defmodule NeuralNetwork.Connection do
   defstruct pid: nil,
             source_pid: nil,
             target_pid: nil,
-            weight: 0.4
+            weight: 0
 
   def start_link(connection_fields \\ %{}) do
     {:ok, pid} = Agent.start_link(fn -> %Connection{} end)
-    update(pid, Map.merge(connection_fields, %{pid: pid}))
+    update(pid, Map.merge(connection_fields, %{pid: pid, weight: Float.round(:rand.uniform,6)}))
 
     {:ok, pid}
   end

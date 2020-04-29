@@ -134,7 +134,7 @@ defmodule NeuralNetwork.Network do
   @doc """
   Returns values from output layer.
   """
-  defp get_output_data(network_pid) do
+  def get_output_data(network_pid) do
     with model <- network_pid |> Network.model() do
       model.output_layer
       |> Layer.get()
@@ -152,7 +152,7 @@ defmodule NeuralNetwork.Network do
   @doc """
   Forward
   """
-  defp forward(network_pid, input_data) do
+  def forward(network_pid, input_data) do
     network_pid |> Network.model() |> Network.activate(input_data)
   end
 
